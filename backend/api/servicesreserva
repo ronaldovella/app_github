@@ -1,0 +1,43 @@
+import os
+from pathlib import Path
+from groq import Groq
+from dotenv import load_dotenv
+
+caminho_env = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=caminho_env)
+
+# Inicializa o cliente com a chave da Groq
+client = Groq(
+    api_key="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"
+)
+
+def gerar_resposta_ia(mensagem_usuario):
+    prompt_sistema = """Você é uma assistente virtual empática e acolhedora, focada em dar apoio emocional para pessoas passando por separação, divórcio ou dores emocionais (como depressão, ansiedade, tristeza).
+
+REGRAS ABSOLUTAS:
+1. SEJA EXTREMAMENTE BREVE. MÁXIMO DE 3 FRASES POR RESPOSTA.
+2. Acolha com empatia qualquer desabafo emocional do usuário.
+3. Saudações simples (bom dia, boa tarde): responda APENAS "[Saudação]. Como posso ajudar?".
+4. Se o usuário falar de assuntos puramente técnicos ou aleatórios que NÃO envolvam sentimentos ou relacionamentos (ex: compras, política, jogos), responda EXATAMENTE: "Este assunto não é pertinente ao nosso objetivo. Como posso ajudar?".
+"""
+
+
+    try:
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": prompt_sistema
+                },
+                {
+                    "role": "user",
+                    "content": mensagem_usuario
+                }
+            ],
+            model="openai/gpt-oss-120b",
+            temperature=0.7,
+            max_tokens=1024,
+        )
+        return chat_completion.choices[0].message.content
+    except Exception as e:
+        return f"Erro ao comunicar com a IA: {str(e)}"

@@ -1,0 +1,52 @@
+import os
+from pathlib import Path
+from groq import Groq
+from dotenv import load_dotenv
+
+caminho_env = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=caminho_env)
+
+# Inicializa o cliente com a chave da Groq
+client = Groq(
+    api_key="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"
+)
+
+prompt_sistema = """Você é uma assistente virtual de apoio emocional.
+
+REGRAS ABSOLUTAS:
+1. REGRA CRÍTICA DE COLETA DE DADOS (AVALIE O HISTÓRICO):
+   - REGRA DE MEMÓRIA: Revise TODAS as mensagens anteriores com muita atenção. O usuário já informou o nome na primeira resposta dele. MEMORIZE o nome e É ESTRITAMENTE PROIBIDO perguntar o nome novamente.
+   - Você precisa de 3 dados na ordem: Nome, Idade e Orientação Sexual.
+   - Verifique o HISTÓRICO. Se você JÁ SABE os 3 dados, inicie o atendimento normalmente.
+   - CASO CONTRÁRIO (se faltar algo): Identifique o PRIMEIRO dado que falta e pergunte APENAS ele:
+     * Se falta a Idade, pergunte: "2ª. Qual a sua idade?" (Se a idade for < 18 ou > 100, recuse dizendo: "A idade informada não é válida. Por favor, informe sua idade correta.")
+     * Se falta a Orientação, pergunte: "3ª. Qual a sua orientação sexual?"
+   - ENQUANTO não tiver os 3 dados válidos, VOCÊ É PROIBIDA DE INICIAR O ATENDIMENTO.
+   - APENAS APÓS ter os 3 dados completados, inicie perguntando: "Ok, No que eu posso ajudar?"
+2. Se o assunto for puramente técnico/aleatório (ex: compras, jogos), responda EXATAMENTE: "Este assunto é incoerente com o meu atendimento. Volte ao foco SOS me separei".
+"""
+
+historico_conversa = [
+    {"role": "system", "content": prompt_sistema}
+]
+
+def gerar_resposta_ia(mensagem_usuario):
+    # Adicionamos a nova mensagem do usuário no histórico
+    historico_conversa.append({"role": "user", "content": mensagem_usuario})
+
+    try:
+        chat_completion = client.chat.completions.create(
+            messages=historico_conversa,
+            model="openai/gpt-oss-120b",
+            temperature=0.7,
+            max_tokens=1024,
+        )
+        
+        resposta_ia = chat_completion.choices[0].message.content
+        
+        # Adicionamos a resposta da IA no histórico
+        historico_conversa.append({"role": "assistant", "content": resposta_ia})
+        
+        return resposta_ia
+    except Exception as e:
+        return f"Erro ao comunicar com a IA: {str(e)}"
