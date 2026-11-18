@@ -20,23 +20,16 @@ jobs:
 
       - name: Instalar dependências do sistema
         run: |
+          sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev gettext libltdl-dev libzip-dev
+          sudo apt-get install -y build-essential ccache git libncurses5:i386 libstdc++6:i386 libgtk2.0-0:i386 libpangox-1.0-0:i386 libpangoxft-1.0-0:i386 libidn11:i386 python3-dev zlib1g:i386 libffi-dev libssl-dev gettext libltdl-dev libzip-dev openjdk-17-jdk unzip wget
 
       - name: Instalar Buildozer e Cython
         run: |
+          pip install --upgrade pip
           pip install buildozer cython
 
-      - name: Aceitar licenças do Android SDK
-        run: |
-          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
-          echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-
       - name: Construir o APK com Buildozer
-        run: buildozer android debug
-
-      - name: Fazer upload do APK gerado
-        uses: actions/upload-artifact@v4
-        with:
-          name: aplicativo-android
-          path: bin/*.apk
+        run: |
+          cd frontend
+          buildozer android debug
