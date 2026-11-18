@@ -29,7 +29,7 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get update
           sudo apt-get install -y \
-            build-common ccache git libncurses5:i386 libstdc++6:i386 \
+            build-essential ccache git libncurses5:i386 libstdc++6:i386 \
             libgtk2.0-0:i386 libpangox-1.0-0:i386 libpangoxft-1.0-0:i386 \
             libidn11:i386 python3-dev zlib1g:i386 libffi-dev libssl-dev \
             gettext libltdl-dev libzip-dev unzip wget curl
@@ -39,13 +39,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install --upgrade cython==0.29.36 buildozer
 
-      - name: Compilar APK com Buildozer
+      - name: Compilar APK com Buildozer na Raiz
         run: |
-          cd frontend
           buildozer -v android debug
 
       - name: Guardar artefacto APK
         uses: actions/upload-artifact@v4
         with:
           name: aplicativo-android
-          path: frontend/bin/*.apk
+          path: bin/*.apk
