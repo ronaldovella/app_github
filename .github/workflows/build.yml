@@ -7,19 +7,44 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout código
+      - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Compilar com Buildozer
-        uses: kivy/buildozer-action@v1
+      - name: Configurar Java JDK 17
+        uses: actions/setup-java@v4
         with:
-          filename: frontend/buildozer.spec
-          command: buildozer android debug
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Upload do APK gerado
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências do sistema Linux
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-common ccache git libncurses5:i386 libstdc++6:i386 \
+            libgtk2.0-0:i386 libpangox-1.0-0:i386 libpangoxft-1.0-0:i386 \
+            libidn11:i386 python3-dev zlib1g:i386 libffi-dev libssl-dev \
+            gettext libltdl-dev libzip-dev unzip wget curl
+
+      - name: Instalar Buildozer e Cython
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade cython==0.29.36 buildozer
+
+      - name: Compilar APK com Buildozer
+        run: |
+          cd frontend
+          buildozer -v android debug
+
+      - name: Guardar artefacto APK
         uses: actions/upload-artifact@v4
         with:
           name: aplicativo-android
