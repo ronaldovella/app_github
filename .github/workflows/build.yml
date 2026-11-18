@@ -24,29 +24,21 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Instalar dependências essenciais
+      - name: Instalar dependências do sistema
         run: |
-          sudo dpkg --add-architecture i386
           sudo apt-get update
           sudo apt-get install -y \
             build-essential ccache git python3-dev \
             zlib1g:i386 libffi-dev libssl-dev \
-            libltdl-dev libzip-dev unzip wget curl
+            libltdl-dev libzip-dev unzip wget curl \
+            autoconf libtool pkg-config
 
       - name: Instalar Buildozer e Cython
         run: |
           python -m pip install --upgrade pip
           pip install --upgrade cython==0.29.36 buildozer
 
-      - name: Instalar Android SDK Build-Tools e Aceitar Licenças
-        run: |
-          # Criar diretórios necessários para o Android SDK do Buildozer
-          mkdir -p /home/runner/.buildozer/android/platform/android-sdk
-          
-          # Descarregar e instalar o sdkmanager se necessário, ou usar o ambiente do runner para garantir o aidl
-          echo "y" | sudo ${JAVA_HOME}/bin/sdkmanager --sdk_root=/home/runner/.buildozer/android/platform/android-sdk "platform-tools" "build-tools;33.0.0" "platforms;android-33" || true
-
-      - name: Compilar APK com Buildozer na Raiz
+      - name: Compilar APK com Buildozer
         run: |
           buildozer -v android debug
 
